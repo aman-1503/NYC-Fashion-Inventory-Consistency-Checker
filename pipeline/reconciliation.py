@@ -23,20 +23,21 @@ def generate_restock(inventory):
     return restock[["article_id", "quantity_added", "timestamp"]]
 
 
+import numpy as np
+
 def generate_stock_records(inventory, restock, sales):
 
-    sales_per_sku = sales.groupby("article_id")["quantity_sold"].sum().reset_index()
-    sales_per_sku = sales_per_sku.rename(columns={"quantity_sold": "total_sales"})
+    # merge inventory + restock
+    recon = inventory.merge(restock, on="article_id", how="left")
 
-    recon = inventory.merge(restock, on="article_id")
-    recon = recon.merge(sales_per_sku, on="article_id")
-
+    # expected stock
     recon["expected_stock"] = (
-        recon["initial_stock"] +
-        recon["quantity_added"] -
-        recon["total_sales"]
+        recon["initial_stock"]
+        + recon["quantity_added"]
+        - recon["total_sales"]
     )
 
+    # simulate recorded stock (introduce small errors)
     recon["recorded_stock"] = (
         recon["expected_stock"] - np.random.randint(0, 5, len(recon))
     )
