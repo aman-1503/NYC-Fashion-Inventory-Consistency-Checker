@@ -1,30 +1,38 @@
 # NYC Fashion Inventory Consistency Checker
 
-A full-stack inventory monitoring system that detects stock inconsistencies and anomalies in retail supply chains.
+A full-stack inventory reconciliation and anomaly detection platform for fashion retail analytics.
+
+The system analyzes inventory records, sales transactions, and restocking events to detect inconsistencies and flag risky SKUs.  
+It includes a machine learning pipeline and an interactive dashboard for monitoring inventory health.
+
+---
 
 ## Features
-- Inventory reconciliation across sales, restocks, and stock records
-- ML-based anomaly detection using Isolation Forest
-- Risk scoring for inventory discrepancies
-- REST API exposing analytics endpoints
-- React dashboard (coming next)
 
-## API Endpoints
+- Inventory reconciliation across multiple data sources
+- Anomaly detection using Isolation Forest
+- SKU risk scoring based on discrepancy patterns
+- Interactive React analytics dashboard
+- REST API for triggering inventory analysis
+- Real-time visualization of inventory risk and anomalies
 
-GET /top_risks  
-Returns SKUs with highest inventory risk scores.
-
-GET /anomalies  
-Returns detected inventory anomalies.
+---
 
 ## Tech Stack
 
-Python  
-Pandas  
-Scikit-learn  
-Flask  
-React (dashboard)
+Backend
+- Python
+- Flask
+- Pandas
+- Scikit-learn
 
-## Architecture
+Frontend
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- shadcn-ui
 
-Dataset → ML Pipeline → Flask API → Dashboard
+---
+
+## Project Structure
