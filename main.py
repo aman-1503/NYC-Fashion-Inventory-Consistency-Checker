@@ -1,33 +1,69 @@
-from pipeline.data_loader import load_sales_data
-from pipeline.reconciliation import (
-    build_inventory,
-    generate_restock,
-    generate_stock_records
-)
-from pipeline.anomaly_detection import detect_anomalies
-from pipeline.risk_scoring import compute_risk_score
+import os
+import pandas as pd
+import numpy as np
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
 
 
 def run_pipeline():
 
-    sales, articles = load_sales_data()
+    base_dir = os.path.dirname(__file__)
 
-    inventory = build_inventory(sales)
+    articles_path = os.path.join(base_dir, "data", "articles.csv")
+    transactions_path = os.path.join(base_dir, "data", "transactions_sample.csv")
 
-    restock = generate_restock(inventory)
+    articles = pd.read_csv(articles_path)
+    transactions = pd.read_csv(transactions_path)
 
-    recon = generate_stock_records(inventory, restock, sales)
+    # ------------------------------------------------
+    # Compute how many times each item was sold
+    # ------------------------------------------------
+    sales = transactions.groupby("article_id").size().reset_index(name="recorded_stock")
 
-    recon = detect_anomalies(recon)
+    df = articles.merge(sales, on="article_id", how="left")
 
-    recon = compute_risk_score(recon)
+    df["recorded_stock"] = df["recorded_stock"].fillna(0)
 
-    print("Pipeline completed")
-    print("Total SKUs:", len(recon))
-    print("Anomalies:", len(recon[recon["anomaly"] == -1]))
+    # ------------------------------------------------
+    # Simulate expected stock
+    # ------------------------------------------------
+    np.random.seed(42)
 
-    return recon
+    df["expected_stock"] = df["recorded_stock"] + np.random.randint(-3, 3, size=len(df))
 
+    df["expected_stock"] = df["expected_stock"].clip(lower=0)
 
-if __name__ == "__main__":
-    run_pipeline()
+    # ------------------------------------------------
+    # Inventory discrepancy
+    # ------------------------------------------------
+    df["discrepancy"] = abs(df["expected_stock"] - df["recorded_stock"])
+
+    # risk score
+    df["risk_score"] = (
+        df["discrepancy"] * 0.7 +
+        df["recorded_stock"] * 0.3
+    )
+
+    # ------------------------------------------------
+    # ML features
+    # ------------------------------------------------
+    features = df[["expected_stock", "recorded_stock", "discrepancy"]]
+
+    scaler = StandardScaler()
+    X = scaler.fit_transform(features)
+
+    # ------------------------------------------------
+    # Isolation Forest
+    # ------------------------------------------------
+    model = IsolationForest(
+        contamination=0.03,
+        random_state=42
+    )
+
+    preds = model.fit_predict(X)
+
+    df["anomaly"] = preds
+
+    df["anomaly_flag"] = np.where(df["anomaly"] == -1, 1, 0)
+
+    return df
