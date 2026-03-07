@@ -15,10 +15,15 @@ export interface RiskRecord {
   risk_score: number;
 }
 
-// Mock data for when API is unavailable
+// Mock data if API completely fails
 const generateMockRisks = (): RiskRecord[] => {
-  const ids = [108775015, 372860001, 524012001, 693212001, 759347002, 819930002, 875036001, 899948001, 923528001, 940456001,
-    110065001, 222222002, 333333003, 444444004, 555555005, 666666006, 777777007, 888888008, 999999009, 101010101];
+  const ids = [
+    108775015, 372860001, 524012001, 693212001, 759347002,
+    819930002, 875036001, 899948001, 923528001, 940456001,
+    110065001, 222222002, 333333003, 444444004, 555555005,
+    666666006, 777777007, 888888008, 999999009, 101010101
+  ];
+
   return ids.map((id, i) => ({
     article_id: id,
     total_sales: 30 + Math.floor(Math.random() * 120),
@@ -47,34 +52,46 @@ export function useInventoryData() {
   const [usingMock, setUsingMock] = useState(false);
 
   useEffect(() => {
-    const controller = new AbortController();
 
     const fetchData = async () => {
       try {
-        const [risksRes, anomaliesRes] = await Promise.all([
-  fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks"),
-  fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies")
-]);
 
-if (!risksRes.ok || !anomaliesRes.ok) {
-  throw new Error("API fetch failed");
-}
-        const [risks, anoms] = await Promise.all([risksRes.json(), anomaliesRes.json()]);
+        const risksRes = await fetch(
+          "https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks"
+        );
+
+        const anomaliesRes = await fetch(
+          "https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies"
+        );
+
+        if (!risksRes.ok || !anomaliesRes.ok) {
+          throw new Error("API response not OK");
+        }
+
+        const risks = await risksRes.json();
+        const anoms = await anomaliesRes.json();
+
         setTopRisks(risks);
         setAnomalies(anoms);
-      } catch {
-        // Fall back to mock data when API isn't running
+        setUsingMock(false);
+
+      } catch (err) {
+
+        console.error("API error:", err);
+
+        // fallback only if API truly fails
         setTopRisks(generateMockRisks());
         setAnomalies(generateMockAnomalies());
         setUsingMock(true);
         setError("API unavailable — displaying sample data");
+
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-    return () => controller.abort();
+
   }, []);
 
   return { topRisks, anomalies, loading, error, usingMock };
