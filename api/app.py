@@ -4,7 +4,8 @@ from main import run_pipeline
 import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 # run pipeline once on server start
 data = run_pipeline()
