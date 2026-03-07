@@ -52,9 +52,13 @@ export function useInventoryData() {
     const fetchData = async () => {
       try {
         const [risksRes, anomaliesRes] = await Promise.all([
-          fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks", { signal: controller.signal }),
-fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies", { signal: controller.signal }),
-        ]);
+  fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks"),
+  fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies")
+]);
+
+if (!risksRes.ok || !anomaliesRes.ok) {
+  throw new Error("API fetch failed");
+}
         const [risks, anoms] = await Promise.all([risksRes.json(), anomaliesRes.json()]);
         setTopRisks(risks);
         setAnomalies(anoms);
