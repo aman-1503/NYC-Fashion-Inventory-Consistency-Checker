@@ -25,7 +25,10 @@ const Index = () => {
     const data = await res.json();
     console.log("Pipeline result:", data);
 
-    window.location.reload();
+    // wait a bit for render cold start
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
 
   } catch (err) {
     console.error("Pipeline error:", err);
