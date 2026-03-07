@@ -52,8 +52,8 @@ export function useInventoryData() {
     const fetchData = async () => {
       try {
         const [risksRes, anomaliesRes] = await Promise.all([
-          fetch("http://localhost:5000/top_risks", { signal: controller.signal }),
-          fetch("http://localhost:5000/anomalies", { signal: controller.signal }),
+          fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks", { signal: controller.signal }),
+fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies", { signal: controller.signal }),
         ]);
         const [risks, anoms] = await Promise.all([risksRes.json(), anomaliesRes.json()]);
         setTopRisks(risks);
