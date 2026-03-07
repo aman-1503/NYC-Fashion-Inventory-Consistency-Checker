@@ -15,16 +15,20 @@ const Index = () => {
 
   const runAnalysis = async () => {
   try {
-    await fetch(
+    const res = await fetch(
       "https://nyc-fashion-inventory-consistency-checker.onrender.com/run_pipeline",
       {
         method: "POST",
       }
     );
 
+    const data = await res.json();
+    console.log("Pipeline result:", data);
+
     window.location.reload();
+
   } catch (err) {
-    console.error(err);
+    console.error("Pipeline error:", err);
   }
 };
 
