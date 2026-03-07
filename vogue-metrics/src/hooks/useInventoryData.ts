@@ -15,7 +15,7 @@ export interface RiskRecord {
   risk_score: number;
 }
 
-// Mock data if API completely fails
+// Mock data for when API is unavailable
 const generateMockRisks = (): RiskRecord[] => {
   const ids = [
     108775015, 372860001, 524012001, 693212001, 759347002,
@@ -52,46 +52,35 @@ export function useInventoryData() {
   const [usingMock, setUsingMock] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
 
     const fetchData = async () => {
       try {
+        const [risksRes, anomaliesRes] = await Promise.all([
+          fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks", { signal: controller.signal }),
+          fetch("https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies", { signal: controller.signal }),
+        ]);
 
-        const risksRes = await fetch(
-          "https://nyc-fashion-inventory-consistency-checker.onrender.com/top_risks"
-        );
-
-        const anomaliesRes = await fetch(
-          "https://nyc-fashion-inventory-consistency-checker.onrender.com/anomalies"
-        );
-
-        if (!risksRes.ok || !anomaliesRes.ok) {
-          throw new Error("API response not OK");
-        }
-
-        const risks = await risksRes.json();
-        const anoms = await anomaliesRes.json();
+        const [risks, anoms] = await Promise.all([
+          risksRes.json(),
+          anomaliesRes.json()
+        ]);
 
         setTopRisks(risks);
         setAnomalies(anoms);
-        setUsingMock(false);
-
-      } catch (err) {
-
-        console.error("API error:", err);
-
-        // fallback only if API truly fails
+      } catch {
+        // Fall back to mock data when API isn't running
         setTopRisks(generateMockRisks());
         setAnomalies(generateMockAnomalies());
         setUsingMock(true);
         setError("API unavailable — displaying sample data");
-
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-
+    return () => controller.abort();
   }, []);
 
   return { topRisks, anomalies, loading, error, usingMock };
