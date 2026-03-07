@@ -36,3 +36,13 @@ Frontend
 ---
 
 ## Project Structure
+# NYC Fashion Inventory Consistency Checker
+
+🔗 **Live Dashboard:**  
+https://nyc-fashion-inventory-consistency-checker-dwpfz69w1.vercel.app
+
+🔗 **Backend API:**  
+https://nyc-fashion-inventory-consistency-checker.onrender.com
+
+
+
