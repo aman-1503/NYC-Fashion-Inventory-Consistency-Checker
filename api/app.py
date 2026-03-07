@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from main import run_pipeline
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -11,8 +12,6 @@ data = run_pipeline()
 
 @app.route("/top_risks")
 def top_risks():
-    global data
-
     top = data.sort_values(
         by="risk_score",
         ascending=False
@@ -23,8 +22,6 @@ def top_risks():
 
 @app.route("/anomalies")
 def anomalies():
-    global data
-
     anoms = data[data["anomaly_flag"] == 1]
 
     return jsonify(anoms.to_dict(orient="records"))
@@ -34,7 +31,7 @@ def anomalies():
 def run_pipeline_api():
     global data
 
-    # re-run pipeline
+    # re-run pipeline and update dataset
     data = run_pipeline()
 
     return {
@@ -44,7 +41,10 @@ def run_pipeline_api():
     }
 
 
-import os
+@app.route("/")
+def health():
+    return {"status": "API running"}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
