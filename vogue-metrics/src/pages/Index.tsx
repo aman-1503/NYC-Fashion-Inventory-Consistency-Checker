@@ -14,16 +14,19 @@ const Index = () => {
   const { topRisks, anomalies, loading, usingMock } = useInventoryData();
 
   const runAnalysis = async () => {
-    try {
-      await fetch("http://127.0.0.1:5000/run_pipeline", {
+  try {
+    await fetch(
+      "https://nyc-fashion-inventory-consistency-checker.onrender.com/run_pipeline",
+      {
         method: "POST",
-      });
+      }
+    );
 
-      window.location.reload();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    window.location.reload();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const totalSKUs = topRisks.length;
   const anomalyCount = anomalies.length;
