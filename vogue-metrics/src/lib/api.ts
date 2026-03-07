@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://nyc-fashion-inventory-consistency-checker.onrender.com"
 
 export async function getTopRisks() {
   const res = await fetch(`${API_BASE}/top_risks`);
